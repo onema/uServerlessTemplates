@@ -38,6 +38,7 @@ functions:
           path: /{id}
           method: get
 {{#warmup}}
+
       - schedule:
           rate: rate(2 minutes)
           input:
@@ -45,6 +46,6 @@ functions:
 {{/warmup}}
 
 # you can add CloudFormation resource templates here
-resources:
-  Parameters: ${file(infrastructure/link-resources_cfn.yml):Parameters}
-  Resources: ${file(infrastructure/link-resources_cfn.yml):Resources}
+#resources:
+#  Parameters: ${file(infrastructure/custom-resources_cfn.yml):Parameters}
+#  Resources: ${file(infrastructure/custom-resources_cfn.yml):Resources}
