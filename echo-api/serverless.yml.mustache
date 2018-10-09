@@ -30,13 +30,13 @@ package:
 
 functions:
   {{name}}-function:
-    handler: {{organization}}.{{name}}.Function::lambdaHandler
+    handler: {{organization}}.{{name}}.EchoFunction::lambdaHandler
     # the DLQ is part of the bootstrap infrastructure for uServerless
     onError: ${file(infrastructure/global-values.yml):deadLetterQueue}
     events:
       - http:
           path: /
-          method: get
+          method: post
 {{#warmup}}
 
       - schedule:
