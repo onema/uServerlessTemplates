@@ -1,0 +1,123 @@
+service: {{name}}
+
+provider:
+  name: aws
+  runtime: java8
+  profile: ${opt:profile, 'default'}
+  timeout: 60
+  versionFunctions: false
+
+
+  # you can overwrite defaults here
+  stage: dev
+  region: us-east-1
+
+  # you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements:
+  - Effect: "Allow"
+    Action:
+    - sns:Publish
+    Resource:
+    - "arn:aws:sns:*:*:${self:custom.stageName}-error-topic"
+
+  # you can define service wide environment variables here
+  environment:
+    STAGE_NAME: ${self:custom.stageName}
+    LOG_EMAIL: false
+    SNS_ERROR_TOPIC:
+      Fn::Join: [':', ["arn:aws:sns", Ref: "AWS::Region", Ref: "AWS::AccountId","${self:custom.stageName}-error-topic"]]
+
+# Custom values. These can be referenced in the Cloud Formation template
+custom:
+  stageName: ${opt:stage, self:provider.stage}
+
+# you can add packaging information here
+# Make sure to run "sbt assembly" to create a jar file
+# with all your dependencies and put that jar file name here.
+package:
+  artifact: target/scala-2.12/app.jar
+
+functions:
+  {{name}}-function:
+    handler: {{organization}}.{{name}}.Function::lambdaHandler
+
+    events:
+      {{#api}}
+      - http:
+          path: {{name}}/create
+          method: get
+      {{/api}}
+      {{#sns}}
+      - sns: {{name}}-topic
+      {{/sns}}
+#    Define function environment variables here
+#    environment:
+#      variable2: value
+
+# you can add CloudFormation resource templates here
+#resources:
+#  Resources:
+#    NewResource:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: my-new-bucket
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"
+
+
+
+# you can add CloudFormation resource templates here
+
+#########################################
+service: {{name}}
+
+provider:
+  name: aws
+  runtime: java8
+  timeout: 30
+  versionFunctions: false
+  memorySize: 1024
+  stage: dev
+  region: us-east-1
+
+  # you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements: ${file(infrastructure/global-values.yml):iamRoleStatements}
+
+  # Service wide environment variables
+  environment:
+    STAGE_NAME: ${self:custom.stageName}
+
+    # The error topic is part of the bootstrap infrastructure for uServerless
+    SNS_ERROR_TOPIC: ${file(infrastructure/global-values.yml):environment.SNS_ERROR_TOPIC}
+
+# Custom values. These can be referenced in the Cloud Formation template
+custom: ${file(infrastructure/global-values.yml):custom}
+
+# you can add packaging information here
+# Make sure to run "sbt assembly" to create a jar file
+# with all your dependencies and put that jar file name here.
+package:
+  artifact: target/scala-2.12/app.jar
+
+functions:
+  {{name}}-function:
+    handler: {{organization}}.{{name}}.Function::lambdaHandler
+    # the DLQ is part of the bootstrap infrastructure for uServerless
+    onError: ${file(infrastructure/global-values.yml):deadLetterQueue}
+    events:
+      - http:
+          path: /{id}
+          method: get
+{{#warmup}}
+      - schedule:
+          rate: rate(2 minutes)
+          input:
+            warmup: true
+{{/warmup}}
+
+# you can add CloudFormation resource templates here
+resources:
+  Parameters: ${file(infrastructure/link-resources_cfn.yml):Parameters}
+  Resources: ${file(infrastructure/link-resources_cfn.yml):Resources}

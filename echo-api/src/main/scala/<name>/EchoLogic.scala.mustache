@@ -1,0 +1,18 @@
+package {{organization}}.{{name}}
+
+import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNS
+import com.typesafe.scalalogging.Logger
+import org.apache.http.HttpStatus
+
+
+class EchoLogic {
+
+  //--- Fields ---
+  protected val log = Logger("logic")
+
+  //--- Methods ---
+  def process(body: String): Unit = {
+    log.info("Hello, Lambda!")
+    buildResponse(HttpStatus.SC_OK, payload = body, headers = Map("Foo" -> "Bar"))
+  }
+}

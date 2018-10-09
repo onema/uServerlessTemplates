@@ -1,0 +1,20 @@
+package {{organization}}.{{name}}
+
+import com.amazonaws.services.lambda.runtime.Context
+import io.onema.serverlessbase.configuration.lambda.EnvLambdaConfiguration
+import io.onema.serverlessbase.function.LambdaHandler
+import io.onema.userverless.function.ApiGatewayHandler.Cors
+
+
+class EchoFunction extends ApiGatewayHandler with Cors with EnvLambdaConfiguration {
+
+  //--- Fields ---
+  val logic = new Logic()
+
+  //--- Methods ---
+  def lambdaHandler(request: AwsProxyRequest, context: Context): AwsProxyResponse = {
+    cors(request) {
+      logic.process(request.getBody)
+    }
+  }
+}
