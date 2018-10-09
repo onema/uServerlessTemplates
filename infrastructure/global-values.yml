@@ -6,14 +6,6 @@ iamRoleStatements:
       - Fn::ImportValue: "${self:custom.stageName}-error-topic-arn"
   - Effect: Allow
     Action:
-      - dynamodb:PutItem
-      - dynamodb:GetItem
-      - dynamodb:Query
-    Resource:
-      - Fn::GetAtt: [ DynamoDBTable, Arn ]
-      - Fn::Join: ["/", [ Fn::GetAtt: [DynamoDBTable, Arn], "index", "*"]]
-  - Effect: Allow
-    Action:
       - sqs:SendMessageBatch
       - sqs:SendMessage
     Resource:
