@@ -12,6 +12,7 @@ iamRoleStatements:
       - Fn::ImportValue: "${self:custom.stageName}-dead-letter-queue-arn"
 
 environment:
+  STAGE_NAME: ${self:custom.stageName}
   SNS_ERROR_TOPIC:
     Fn::ImportValue: "${self:custom.stageName}-error-topic-arn"
 
