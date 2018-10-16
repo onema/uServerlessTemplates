@@ -1,0 +1,34 @@
+Resources:
+  SourceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "${self:custom.stageName}-s3copy-source-bucket"
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Event: "s3:ObjectCreated:*"
+            Topic:
+              Ref: SNSTopicSourceBucketEvents # This topic is created by serverless
+
+  DestinationBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "${self:custom.stageName}-s3copy-destination-bucket"
+
+  SourceBucketSnsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Id: MyAWSPolicy
+        Statement:
+        - Sid: My-statement-id
+          Effect: Allow
+          Principal: "*"
+          Action: sns:Publish
+          Resource:
+            Ref: SNSTopicSourceBucketEvents
+          Condition:
+            ArnLike:
+              AWS:SourceArn: arn:aws:s3:*:*:*
+      Topics:
+        - Ref: SNSTopicSourceBucketEvents

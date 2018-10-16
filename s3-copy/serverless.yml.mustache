@@ -1,0 +1,48 @@
+service: {{name}}
+
+provider:
+  name: aws
+  runtime: java8
+  timeout: 30
+  versionFunctions: false
+  memorySize: 1024
+  stage: dev
+  region: us-east-1
+
+  # you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements: ${file(infrastructure/global-values.yml):iamRoleStatements}
+
+  # Service wide environment variables
+  environment: ${file(infrastructure/global-values.yml):environment}
+
+# Custom values. These can be referenced in the Cloud Formation template
+custom: ${file(infrastructure/global-values.yml):custom}
+
+# you can add packaging information here
+# Make sure to run "sbt assembly" to create a jar file
+# with all your dependencies and put that jar file name here.
+package:
+  artifact: target/scala-2.12/app.jar
+
+functions:
+  {{name}}-function:
+    handler: {{organization}}.{{name}}.CopyFunction::lambdaHandler
+    # the DLQ is part of the bootstrap infrastructure for uServerless
+    onError: ${file(infrastructure/global-values.yml):deadLetterQueue}
+    environment:
+      DESTINATION_BUCKET:
+        Ref: DestinationBucket
+    events:
+      - sns: SourceBucketEvents
+{{#warmup}}
+
+      - schedule:
+          rate: rate(2 minutes)
+          input:
+            warmup: true
+{{/warmup}
+
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources: ${file(infrastructure/custom-resources_cfn.yml):Resources}
