@@ -19,8 +19,7 @@ class CopyLogic {
   //--- Methods ---
   def process(message: String, destinationBucket: String): Unit = {
     log.info(message)
-    val mapper: ObjectMapper = Mapper.allowUnknownPropertiesMapper
-    val s3Records = message.jsonDecode[S3EventNotification](mapper).getRecords.asScala
+    val s3Records = message.jsonDecode[S3EventNotification].getRecords.asScala
     s3Records.foreach(x => {
       val sourceBucket = x.getS3.getBucket.getName
       val sourceKey = x.getS3.getObject.getKey
