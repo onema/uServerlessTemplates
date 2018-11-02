@@ -12,6 +12,7 @@ lazy val root = (project in file("."))
     Seq(
       // Serverless Base!
       "io.onema"                  % "userverless-core_2.12"      % "{{userverless_version}}",
+      "com.amazonaws"             % "aws-java-sdk-s3"            % "{{aws_sdk_version}}",
 
       // Logging
       "com.typesafe.scala-logging"% "scala-logging_2.12"        % "3.7.2",
