@@ -18,6 +18,6 @@ class CopyFunction extends LambdaHandler[S3Event, Unit] with EnvLambdaConfigurat
 
   //--- Methods ---
   def execute(s3Event: S3Event, context: Context): Unit = {
-    event.getRecords.asScala.foreach(logic.copy)
+    s3Event.getRecords.asScala.foreach(logic.copy)
   }
 }
